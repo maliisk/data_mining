@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Analysis Dashboard</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+        .table-container, .graph-container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center my-4">Data Analysis Dashboard</h1>
+
+        <!-- Buttons Section -->
+        <div class="d-flex flex-wrap gap-3 justify-content-center mb-4">
+            <button id="view-data" class="btn btn-primary">View Dataset</button>
+            <button id="general-info" class="btn btn-secondary">Dataset General Info</button>
+            <button id="missing-data" class="btn btn-warning">Missing Data</button>
+            <button id="popular-products" class="btn btn-info">Popular Products</button>
+            <button id="city-sales" class="btn btn-success">City Sales</button>
+            <button id="payment-distribution" class="btn btn-danger">Payment Distribution</button>
+            <button id="discount-analysis" class="btn btn-primary">Discount Analysis</button>
+            <button id="customer-category" class="btn btn-secondary">Customer Category Analysis</button>
+            <button id="season-sales" class="btn btn-warning">Season Sales</button>
+            <button id="promotion-analysis" class="btn btn-info">Promotion Analysis</button>
+            <button id="remove-missing" class="btn btn-warning">Remove Missing Values</button>
+        </div>
+
+        <!-- Data Preview Section -->
+        <div class="table-container">
+            <h2>Data Preview</h2>
+            <p id="data-info" class="fw-bold"></p>
+            <table id="data-table" class="table table-bordered">
+                <thead>
+                    <tr></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- Graphs & Statistics Section -->
+        <div class="graph-container">
+            <h2>Graphs & Statistics</h2>
+            <pre id="stats" style="background: #e9ecef; padding: 10px; border-radius: 5px;"></pre>
+            <div id="graphs" class="d-flex flex-wrap gap-3"></div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+    function fetchAndDisplay(route, displayType = 'stats', method = 'GET') {
+        $.ajax({
+            url: route,
+            method: method,
+            success: function (response) {
+                if (response.error) {
+                    alert(response.error);
+                    return;
+                }
+
+                if (displayType === 'stats') {
+                    $("#stats").html(`
+                        <pre>${JSON.stringify(response, null, 2)}</pre>
+                        <img src="${response.graph}" alt="Graph" class="img-fluid rounded" style="max-width: 100%; margin-top: 20px;">
+                    `);
+                } else if (displayType === 'table') {
+                    const tableHead = $("#data-table thead tr");
+                    const tableBody = $("#data-table tbody");
+
+                    tableHead.empty();
+                    tableBody.empty();
+
+                    if (response.data && response.data.length > 0) {
+                        // Add table headers
+                        Object.keys(response.data[0]).forEach(key => {
+                            tableHead.append(`<th>${key}</th>`);
+                        });
+
+                        // Add table rows
+                        response.data.forEach(row => {
+                            const rowHtml = Object.values(row).map(val => `<td>${val}</td>`).join('');
+                            tableBody.append(`<tr>${rowHtml}</tr>`);
+                        });
+
+                        $("#data-info").text(`Total rows: ${response.total_rows || 0}`);
+                    }
+                }
+            },
+            error: function () {
+                alert("Error fetching data!");
+            }
+        });
+    }
+
+
+            // Bind buttons to routes
+            $("#view-data").click(() => fetchAndDisplay('/get_data', 'table'));
+            $("#general-info").click(() => fetchAndDisplay('/general_info', 'stats'));
+            $("#missing-data").click(() => fetchAndDisplay('/missing_data', 'stats'));
+            $("#popular-products").click(() => fetchAndDisplay('/popular_products', 'stats'));
+            $("#city-sales").click(() => fetchAndDisplay('/city_sales', 'stats'));
+            $("#payment-distribution").click(() => fetchAndDisplay('/payment_distribution', 'stats'));
+            $("#discount-analysis").click(() => fetchAndDisplay('/discount_analysis', 'stats'));
+            $("#customer-category").click(() => fetchAndDisplay('/customer_category_analysis', 'stats'));
+            $("#season-sales").click(() => fetchAndDisplay('/season_sales', 'stats'));
+            $("#promotion-analysis").click(() => fetchAndDisplay('/promotion_analysis', 'stats'));
+            $("#remove-missing").click(() => fetchAndDisplay('/remove_missing', 'table'));
+        });
+    </script>
+</body>
+</html>
